@@ -10,19 +10,19 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh 'npm install'
+        bat 'npm install'
       }
     }
 
     stage('Run Tests') {
       steps {
         // Continue even if tests fail, as per brief
-        sh 'npm test || true'
+        bat 'cmd /c npm test || exit /b 0'
       }
       post {
         always {
           // If you export JUnit reports, publish them (optional)
-          junit allowEmptyResults: true, testResults: 'reports/junit/*.xml'
+          junit allowEmptyResults: true, testResults: 'reports\\junit\\*.xml'
         }
       }
     }
@@ -30,20 +30,20 @@ pipeline {
     stage('Generate Coverage Report') {
       steps {
         // Ensure package.json has a "coverage" script, e.g. "nyc --reporter=lcov npm test"
-        sh 'npm run coverage || true'
-        archiveArtifacts artifacts: 'coverage/**/*', allowEmptyArchive: true
+        bat 'cmd /c npm run coverage || exit /b 0'
+        archiveArtifacts artifacts: 'coverage\\**\\*', allowEmptyArchive: true
       }
     }
 
     stage('NPM Audit') {
       steps {
         // Generate a machine-readable report for artifacts
-        sh 'npm audit --json || true'
-        sh 'npm audit || true'
+        bat 'cmd /c npm audit --json > npm-audit.json || exit /b 0'
+        bat 'cmd /c npm audit || exit /b 0'
       }
       post {
         always {
-          archiveArtifacts artifacts: 'npm-*audit*.json, npm-debug.log, **/npm-audit*.json', allowEmptyArchive: true
+          archiveArtifacts artifacts: 'npm-audit.json, npm-debug.log, **\\npm-audit*.json', allowEmptyArchive: true
         }
       }
     }
