@@ -1,7 +1,24 @@
 pipeline {
   agent any
 
+  environment {
+    // Adjust if your Node is elsewhere. These are the usual defaults.
+    NODE_DIR = 'C:\\Program Files\\nodejs'
+    NPM_ROAMING = 'C:\\Users\\Ashan indika\\AppData\\Roaming\\npm'
+  }
+
   stages {
+    stage('Check Tools') {
+      steps {
+        withEnv(["PATH=${NODE_DIR};${NPM_ROAMING};%PATH%"]) {
+          bat 'where node || echo node not found'
+          bat 'where npm || echo npm not found'
+          bat 'node -v || exit /b 1'
+          bat 'npm -v || exit /b 1'
+        }
+      }
+    }
+
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/AshanDekMIT2K26/8.1CDevSecOps.git'
@@ -10,18 +27,20 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        bat 'npm install'
+        withEnv(["PATH=${NODE_DIR};${NPM_ROAMING};%PATH%"]) {
+          bat 'npm install'
+        }
       }
     }
 
     stage('Run Tests') {
       steps {
-        // Continue even if tests fail, as per brief
-        bat 'cmd /c npm test || exit /b 0'
+        withEnv(["PATH=${NODE_DIR};${NPM_ROAMING};%PATH%"]) {
+          bat 'cmd /c npm test || exit /b 0'
+        }
       }
       post {
         always {
-          // If you export JUnit reports, publish them (optional)
           junit allowEmptyResults: true, testResults: 'reports\\junit\\*.xml'
         }
       }
@@ -29,17 +48,19 @@ pipeline {
 
     stage('Generate Coverage Report') {
       steps {
-        // Ensure package.json has a "coverage" script, e.g. "nyc --reporter=lcov npm test"
-        bat 'cmd /c npm run coverage || exit /b 0'
-        archiveArtifacts artifacts: 'coverage\\**\\*', allowEmptyArchive: true
+        withEnv(["PATH=${NODE_DIR};${NPM_ROAMING};%PATH%"]) {
+          bat 'cmd /c npm run coverage || exit /b 0'
+          archiveArtifacts artifacts: 'coverage\\**\\*', allowEmptyArchive: true
+        }
       }
     }
 
     stage('NPM Audit') {
       steps {
-        // Generate a machine-readable report for artifacts
-        bat 'cmd /c npm audit --json > npm-audit.json || exit /b 0'
-        bat 'cmd /c npm audit || exit /b 0'
+        withEnv(["PATH=${NODE_DIR};${NPM_ROAMING};%PATH%"]) {
+          bat 'cmd /c npm audit --json > npm-audit.json || exit /b 0'
+          bat 'cmd /c npm audit || exit /b 0'
+        }
       }
       post {
         always {
