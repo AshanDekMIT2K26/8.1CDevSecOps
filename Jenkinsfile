@@ -14,14 +14,14 @@ pipeline {
   }
 
   stages {
-    stage('Check Tools') {
-      steps {
-        bat 'where node || echo node not found'
-        bat 'where npm  || echo npm not found'
-        bat 'node -v'
-        bat 'npm -v'
-      }
-    }
+    // stage('Check Tools') {
+    //   steps {
+    //     bat 'where node || echo node not found'
+    //     bat 'where npm  || echo npm not found'
+    //     bat 'node -v'
+    //     bat 'npm -v'
+    //   }
+    // }
 
     stage('Checkout') {
       steps {
@@ -59,7 +59,7 @@ pipeline {
       }
     }
 
-    stage('NPM Audit') {
+    stage('NPM Audit (Security Scan)') {
       steps {
         bat 'cmd /c npm audit --json > npm-audit.json || exit /b 0'
         bat 'cmd /c npm audit || exit /b 0'
